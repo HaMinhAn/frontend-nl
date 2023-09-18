@@ -5,10 +5,12 @@ import {
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Breadcrumb, Layout, Menu } from "antd";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Main from "../../components/Main/Main";
 import "./style.css";
 import { Link } from "react-router-dom";
+import { get } from "../../service/api";
+import { HomeElements } from "../../utils/Navbar";
 const { Header, Content, Sider, Footer } = Layout;
 
 const items1: MenuProps["items"] = ["1", "2", "3"].map((key) => ({
@@ -38,6 +40,15 @@ const items2: MenuProps["items"] = [
   };
 });
 const LayoutDefault = (props: { children: React.ReactNode }) => {
+  const [name, setName] = useState(window.localStorage.getItem("user") || "");
+  useEffect(() => {
+    const id = localStorage.getItem("id");
+    get({ url: `/${id}` }).then((res) => {
+      const name = res.data.name;
+      setName(name);
+      window.localStorage.setItem("user", name);
+    });
+  }, []);
   return (
     <Layout>
       <Header className="header" style={{ backgroundColor: "antiquewhite" }}>
@@ -61,7 +72,7 @@ const LayoutDefault = (props: { children: React.ReactNode }) => {
           >
             Log out
           </Link>
-          <div>Hi, {localStorage.getItem("user")}</div>
+          <div>Hi, {name}</div>
         </div>
       </Header>
       <Layout>
@@ -71,7 +82,7 @@ const LayoutDefault = (props: { children: React.ReactNode }) => {
             defaultSelectedKeys={["1"]}
             defaultOpenKeys={["sub1"]}
             style={{ height: "100%", borderRight: 0 }}
-            items={items2}
+            items={HomeElements}
           />
         </Sider>
         <Layout style={{ padding: "0 24px 24px" }}>

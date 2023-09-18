@@ -1,18 +1,8 @@
-import {
-  AutoComplete,
-  Button,
-  Cascader,
-  Checkbox,
-  Col,
-  Form,
-  Input,
-  InputNumber,
-  Row,
-  Select,
-} from "antd";
+import { Button, Form, Input, Select } from "antd";
 import React, { useState } from "react";
 import { RegisterRequest } from "../../types/User";
-import { post } from "../../service/api";
+import { post, setAuthHeader } from "../../service/api";
+import { useHistory } from "react-router";
 const { Option } = Select;
 
 const formItemLayout = {
@@ -40,9 +30,9 @@ const tailFormItemLayout = {
 
 const RegisterForm: React.FC = () => {
   const [form] = Form.useForm();
+  const history = useHistory();
   // const [infor, setInfor] = useState<RegisterRequest>();
   const onFinish = (values: any) => {
-    console.log(values);
     const infor: RegisterRequest = {
       username: values.email,
       password: values.password,
@@ -50,8 +40,12 @@ const RegisterForm: React.FC = () => {
       age: 10,
       phoneNumber: values.phone,
       sex: values.gender === "Male" ? true : false,
+      adress: values.address,
     };
-    post({ url: "/register", data: infor });
+    post({ url: "/register", data: infor }).then((res) => {
+      setAuthHeader(res.data.token);
+      history.push("/login");
+    });
   };
 
   const prefixSelector = (
@@ -143,7 +137,20 @@ const RegisterForm: React.FC = () => {
       >
         <Input />
       </Form.Item>
-
+      <Form.Item
+        name="adress"
+        label="Adress"
+        tooltip="where do you live?"
+        rules={[
+          {
+            required: true,
+            message: "Please input your adress!",
+            whitespace: true,
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
       <Form.Item
         name="phone"
         label="Phone Number"

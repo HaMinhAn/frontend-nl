@@ -1,10 +1,11 @@
 import { Button, Form, Input, message } from "antd";
 import React from "react";
 import { useHistory } from "react-router-dom";
-import { post, setAuthHeader } from "../../service/api";
+import { useAuth } from "../../contexts/auth";
 
 const LoginForm = () => {
   const history = useHistory();
+  const { login } = useAuth();
   const onFinish = (values: any) => {
     // if (values.username === "user" && values.password === "pass") {
     //   setAuthHeader(btoa(values.username + values.password));
@@ -13,18 +14,7 @@ const LoginForm = () => {
     // } else {
     //   message.error("Nhập sai thông tin đăng nhập");
     // }
-    post({
-      url: "/login",
-      data: { username: values.username, password: values.password },
-    })
-      .then((res) => {
-        setAuthHeader(res.data.token);
-        history.push("/");
-        console.log("Success:", values);
-      })
-      .catch((e) => {
-        console.log(e);
-      });
+    login(values.username, values.password);
   };
 
   const onFinishFailed = (errorInfo: any) => {

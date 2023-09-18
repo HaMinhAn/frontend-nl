@@ -2,10 +2,13 @@ import "./App.css";
 import { BrowserRouter as Router } from "react-router-dom";
 import RouteMangane from "./routes/Route";
 import "./index.css";
+import { AuthProvider } from "./contexts/auth";
 function App() {
   return (
     <Router>
-      <RouteMangane />
+      <AuthProvider>
+        <RouteMangane />
+      </AuthProvider>
     </Router>
   );
 }
