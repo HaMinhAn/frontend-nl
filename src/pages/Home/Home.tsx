@@ -1,12 +1,22 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Main from "../../components/Main/Main";
 import LayoutDefault from "../../components/Layout/LayoutDefault";
-import { get } from "../../service/api";
+import { useCategory } from "../../contexts/category";
+import { Pagination } from "antd";
 
 const HomePage: React.FC = () => {
+  const { products, setPage } = useCategory();
+  useEffect(() => {}, [products]);
   return (
     <LayoutDefault>
       <Main />
+      <Pagination
+        onChange={(page, pageSize) =>
+          setPage({ page: page - 1, size: pageSize })
+        }
+        defaultCurrent={1}
+        total={30}
+      />
     </LayoutDefault>
   );
 };

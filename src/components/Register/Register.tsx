@@ -1,7 +1,7 @@
-import { Button, Form, Input, Select } from "antd";
+import { Button, Form, Input, Select, message } from "antd";
 import React, { useState } from "react";
 import { RegisterRequest } from "../../types/User";
-import { post, setAuthHeader } from "../../service/api";
+import { localhost } from "../../service/api";
 import { useHistory } from "react-router";
 const { Option } = Select;
 
@@ -42,8 +42,9 @@ const RegisterForm: React.FC = () => {
       sex: values.gender === "Male" ? true : false,
       adress: values.address,
     };
-    post({ url: "/register", data: infor }).then((res) => {
-      setAuthHeader(res.data.token);
+    localhost.post({ url: "/register", data: infor }).then((res) => {
+      message.info("Đăng ký thành công");
+      window.localStorage.setItem("token", res.data.token);
       history.push("/login");
     });
   };

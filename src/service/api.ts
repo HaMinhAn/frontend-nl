@@ -1,39 +1,70 @@
-import axios from "axios";
+import axios, { Axios, AxiosRequestConfig, HttpStatusCode } from "axios";
+class HostName {
+  private readonly client: Axios;
+  private setStatis: ((status: HttpStatusCode) => void) | undefined;
 
-axios.defaults.baseURL = "http://localhost:8080";
-axios.defaults.headers.post["Content-Type"] = "application/json";
-
-export const getAuthToken = () => {
-  return window.localStorage.getItem("token");
-};
-
-export const setAuthHeader = (token: string) => {
-  window.localStorage.setItem("token", token);
-};
-const buildheaders = () => {
-  let headers = {};
-  if (getAuthToken() !== null && getAuthToken() !== "null") {
-    headers = { Authorization: `Bearer ${getAuthToken()}` };
+  constructor(host: string) {
+    this.client = axios.create({
+      headers: {
+        "Content-Type": "application/json",
+      },
+      baseURL: host,
+    });
   }
-  return headers;
-};
 
-export const get = (props: { url: string; data?: any; param?: any }) => {
-  return axios({
-    method: "GET",
-    url: props.url,
-    data: props.data,
-    params: { ...props.param },
-    headers: buildheaders(),
-  });
-};
+  getAuthToken = () => {
+    return window.localStorage.getItem("token");
+  };
 
-export const post = (props: { url: string; data?: any; param?: any }) => {
-  return axios({
-    method: "POST",
-    url: props.url,
-    data: props.data,
-    params: { ...props.param },
-    headers: buildheaders(),
-  });
-};
+  setAuthHeader = (token: string) => {
+    window.localStorage.setItem("token", token);
+  };
+  buildheaders = (configs?: AxiosRequestConfig) => {
+    let configsHeader = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "",
+      },
+    };
+    if (this.getAuthToken() !== null && this.getAuthToken() !== "null") {
+      configsHeader.headers.Authorization =
+        `Bearer ${this.getAuthToken()}` || "";
+      console.log(configsHeader.headers.Authorization);
+    }
+    return { ...configsHeader, ...configs };
+  };
+
+  get = (props: { url: string; configs?: AxiosRequestConfig }) => {
+    return this.client.get(props.url, this.buildheaders(props.configs));
+  };
+
+  post = (props: {
+    url: string;
+    data?: object;
+    configs?: AxiosRequestConfig;
+  }) => {
+    return this.client.post(
+      props.url,
+      props.data,
+      this.buildheaders(props.configs)
+    );
+  };
+  put = (props: {
+    url: string;
+    data?: object;
+    configs?: AxiosRequestConfig;
+  }) => {
+    return this.client.put(
+      props.url,
+      props.data,
+      this.buildheaders(props.configs)
+    );
+  };
+  delete = (props: { url: string; configs?: AxiosRequestConfig }) => {
+    return this.client.delete(props.url, this.buildheaders(props.configs));
+  };
+}
+
+const localhost = new HostName("http://localhost:8080/");
+const CartService = new HostName("http://localhost:8762/api/");
+export { localhost, CartService };

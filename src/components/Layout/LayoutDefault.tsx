@@ -7,54 +7,48 @@ import type { MenuProps } from "antd";
 import { Breadcrumb, Layout, Menu } from "antd";
 import React, { useEffect, useState } from "react";
 import Main from "../../components/Main/Main";
-import "./style.css";
-import { Link } from "react-router-dom";
-import { get } from "../../service/api";
-import { HomeElements } from "../../utils/Navbar";
+import styles from "./style.module.css";
+import { Link, useHistory } from "react-router-dom";
+import { AdminElements, AdminItems, HomeElements } from "../../utils/Navbar";
+import { Product } from "../../types/Product";
+import { useCategory } from "../../contexts/category";
+import { localhost } from "../../service/api";
+import { useAuth } from "../../contexts/auth";
 const { Header, Content, Sider, Footer } = Layout;
 
-const items1: MenuProps["items"] = ["1", "2", "3"].map((key) => ({
-  key,
-  label: `nav ${key}`,
-}));
-
-const items2: MenuProps["items"] = [
-  UserOutlined,
-  LaptopOutlined,
-  NotificationOutlined,
-].map((icon, index) => {
-  const key = String(index + 1);
-
-  return {
-    key: `sub${key}`,
-    icon: React.createElement(icon),
-    label: `Home`,
-
-    children: new Array(4).fill(null).map((_, j) => {
-      const subKey = index * 4 + j + 1;
-      return {
-        key: subKey,
-        label: `option${subKey}`,
-      };
-    }),
-  };
-});
 const LayoutDefault = (props: { children: React.ReactNode }) => {
+  const history = useHistory();
+  const { isAdmin } = useAuth();
+  const { setCategory } = useCategory();
   const [name, setName] = useState(window.localStorage.getItem("user") || "");
+  const id = localStorage.getItem("id");
   useEffect(() => {
-    const id = localStorage.getItem("id");
-    get({ url: `/${id}` }).then((res) => {
-      const name = res.data.name;
-      setName(name);
-      window.localStorage.setItem("user", name);
-    });
+    if (id) {
+      localhost.get({ url: `/${id}` }).then((res) => {
+        const name = res.data.name;
+        setName(name);
+        window.localStorage.setItem("user", name);
+        if (id === "1" && window.location.pathname === "/") {
+          history.push("/admin");
+        }
+      });
+    }
   }, []);
   return (
     <Layout>
-      <Header className="header" style={{ backgroundColor: "antiquewhite" }}>
+      <Header
+        className={styles.header}
+        style={{ backgroundColor: "antiquewhite" }}
+      >
         <div>
-          <div className="logo" />
-          <div>Logo</div>
+          <div
+            className={styles.logo}
+            onClick={() => {
+              history.push("/");
+            }}
+          >
+            Logo
+          </div>
         </div>
         <div
           style={{
@@ -63,49 +57,81 @@ const LayoutDefault = (props: { children: React.ReactNode }) => {
             justifyContent: "space-between",
           }}
         >
-          <Link to={"/cart"}>Cart</Link>
-          <Link
-            to={"/login"}
-            onClick={() => {
-              localStorage.clear();
-            }}
-          >
-            Log out
-          </Link>
-          <div>Hi, {name}</div>
+          {name ? (
+            <>
+              {/* <Link
+                to={"/login"}
+                onClick={() => {
+                  localStorage.clear();
+                }}
+              >
+                Log out
+              </Link> */}
+              <Menu
+                mode="horizontal"
+                items={AdminItems(name)}
+                onClick={(e) => {
+                  if (e.key === "orderDetail") {
+                    history.push("/order/detail");
+                  }
+                }}
+              />
+            </>
+          ) : (
+            <>
+              <Link to={"/login"}>Log in</Link>
+              <div style={{ width: 40 }}></div>
+            </>
+          )}
         </div>
       </Header>
       <Layout>
         <Sider width={200} className="site-layout-background">
           <Menu
+            onClick={(e) => {
+              if (e.key === "phone") {
+                history.push("/admin");
+              } else if (e.key === "order") {
+                history.push("/admin/order");
+              } else {
+                history.push("/");
+                setCategory(parseInt(e.key));
+              }
+            }}
             mode="inline"
             defaultSelectedKeys={["1"]}
             defaultOpenKeys={["sub1"]}
             style={{ height: "100%", borderRight: 0 }}
-            items={HomeElements}
+            items={
+              localStorage.getItem("id") == "1" ? AdminElements : HomeElements
+            }
           />
         </Sider>
-        <Layout style={{ padding: "0 24px 24px" }}>
-          <Breadcrumb style={{ margin: "16px 0" }}>
+        <Layout>
+          {/* <Breadcrumb>
             <Breadcrumb.Item>Home</Breadcrumb.Item>
             <Breadcrumb.Item>List</Breadcrumb.Item>
             <Breadcrumb.Item>HomePage</Breadcrumb.Item>
-          </Breadcrumb>
+          </Breadcrumb> */}
           <Content
             className="site-layout-background"
             style={{
               padding: 16,
               margin: 0,
-              minHeight: 630,
+              // minHeight: 630,
             }}
           >
             {props.children}
           </Content>
         </Layout>
       </Layout>
-      <Layout>
-        <Footer>@2023</Footer>
-      </Layout>
+      {/* <Layout>
+        <Footer
+          style={{ textAlign: "center", backgroundColor: "antiquewhite" }}
+        >
+          @2023
+        </Footer>
+      </Layout> */}
     </Layout>
   );
 };

@@ -7,3 +7,9 @@ export interface RegisterRequest {
   sex: boolean;
   adress: string;
 }
+export interface RecieveInfo {
+  name: string;
+  phoneNumber: number;
+  address: string;
+  paymentMethod: number;
+}
